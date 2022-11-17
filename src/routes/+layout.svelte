@@ -3,51 +3,30 @@
 	import './styles.css';
 </script>
 
-<div class="app">
-	<Header />
+<svelte:head>
+	<title>Bauble</title>
+</svelte:head>
 
-	<main>
-		<slot />
-	</main>
+<Header />
 
-	<footer>
-		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
-	</footer>
-</div>
+<main>
+	<slot />
+</main>
 
 <style>
-	.app {
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-	}
-
 	main {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		padding: 1rem;
-		width: 100%;
-		max-width: 64rem;
+		padding: 0.5em;
+		display: block;
 		margin: 0 auto;
-		box-sizing: border-box;
+		max-width: 768px;
 	}
 
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
-	}
-
-	footer a {
-		font-weight: bold;
-	}
-
-	@media (min-width: 480px) {
-		footer {
-			padding: 12px 0;
-		}
+	main > * + :global(h1),
+	main > * + :global(h2),
+	main > * + :global(h3),
+	main > * + :global(p),
+	main > * + :global(ul),
+	main > * + :global(div) {
+		margin-top: 1em;
 	}
 </style>
