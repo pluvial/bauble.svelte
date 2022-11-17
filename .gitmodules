@@ -1,0 +1,3 @@
+[submodule "bauble"]
+	path = bauble
+	url = https://github.com/jpaquim/bauble
