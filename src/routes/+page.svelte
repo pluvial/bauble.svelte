@@ -1,56 +1,42 @@
-<script>
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import type { BaubleModule } from 'bauble-runtime';
+	import { Bauble, OutputChannel, Storage } from '$lib';
+
+	const outputChannel = new OutputChannel();
+
+	const baubleOpts = {
+		print(x: string) {
+			outputChannel.print(x, false);
+		},
+		printErr(x: string) {
+			outputChannel.print(x, true);
+		}
+	};
+
+	let runtime: BaubleModule;
+
+	let initialScript: string;
+
+	onMount(async () => {
+		try {
+			const { default: InitializeWasm } = await import('bauble-runtime');
+			runtime = await InitializeWasm(baubleOpts);
+			initialScript =
+				Storage.getScript() ?? runtime.FS.readFile('intro.janet', { encoding: 'utf8' });
+		} catch (error) {
+			console.error(error);
+		}
+	});
 </script>
 
-<svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
-</svelte:head>
-
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcome_fallback} alt="Welcome" />
-			</picture>
-		</span>
-
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-</section>
-
-<style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
-
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
-	}
-</style>
+{#if runtime && initialScript}
+	<Bauble
+		{runtime}
+		{outputChannel}
+		{initialScript}
+		focusable={false}
+		canSave={true}
+		size={{ width: 512, height: 512 }}
+	/>
+{/if}
