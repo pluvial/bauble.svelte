@@ -11,8 +11,6 @@
 
 <style>
 	header {
-		--header-height: 40px;
-		--header-padding: 0.5em;
 		--text-color: #1d1f21;
 		color: var(--text-color);
 		background-color: #ffc6f9;

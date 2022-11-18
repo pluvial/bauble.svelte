@@ -63,6 +63,11 @@
 		margin-left: -6px;
 	}
 
+	span.timestamp {
+		font-family: var(--monospace-family);
+		font-size: var(--monospace-size);
+	}
+
 	.toolbar .spacer {
 		flex: 1;
 	}

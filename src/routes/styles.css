@@ -35,6 +35,8 @@
 :root {
 	--toolbar-fg: var(--blue);
 	--toolbar-bg: var(--window);
+	--header-height: 40px;
+	--header-padding: 0.5em;
 }
 
 * {

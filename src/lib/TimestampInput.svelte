@@ -21,6 +21,8 @@
 		box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5);
 		border-radius: 2px;
 		margin: 4px 0;
+		font-family: var(--monospace-family);
+		font-size: var(--monospace-size);
 	}
 
 	input[inputmode='numeric']:last-child {

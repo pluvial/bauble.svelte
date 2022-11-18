@@ -30,13 +30,21 @@
 	});
 </script>
 
-{#if runtime && initialScript}
-	<Bauble
-		{runtime}
-		{outputChannel}
-		{initialScript}
-		focusable={false}
-		canSave={true}
-		size={{ width: 512, height: 512 }}
-	/>
-{/if}
+<div class="container">
+	{#if runtime && initialScript}
+		<Bauble
+			{runtime}
+			{outputChannel}
+			{initialScript}
+			focusable={false}
+			canSave={true}
+			size={{ width: 512, height: 512 }}
+		/>
+	{/if}
+</div>
+
+<style>
+	.container {
+		height: calc(100% - var(--header-height));
+	}
+</style>
