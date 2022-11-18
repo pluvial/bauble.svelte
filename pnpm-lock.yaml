@@ -17,7 +17,7 @@ importers:
       '@types/marked': ^4.0.7
       '@typescript-eslint/eslint-plugin': ^5.27.0
       '@typescript-eslint/parser': ^5.27.0
-      bauble-runtime: workspace:*
+      bauble-runtime: ^0.0.3
       big.js: ^6.2.1
       codemirror: ^6.0.1
       codemirror-lang-janet: ^0.2.0
@@ -42,7 +42,7 @@ importers:
       '@codemirror/view': 6.5.1
       '@lezer/common': 1.0.1
       '@lezer/highlight': 1.1.2
-      bauble-runtime: link:bauble
+      bauble-runtime: 0.0.3
       big.js: 6.2.1
       codemirror: 6.0.1_@lezer+common@1.0.1
       codemirror-lang-janet: 0.2.0
@@ -544,6 +544,10 @@ packages:
   /balanced-match/1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
     dev: true
+
+  /bauble-runtime/0.0.3:
+    resolution: {integrity: sha512-182fx9NSwdJefzgcQutKine+pdGpaZ7Fag0+ntjZmTe3lakZjMnHixpbxRelgi34uqKJbo9w519r68wL6fjTAA==}
+    dev: false
 
   /big.js/6.2.1:
     resolution: {integrity: sha512-bCtHMwL9LeDIozFn+oNhhFoq+yQ3BNdnsLSASUxLciOb1vgvpHsIO1dsENiGMgbb4SkP5TrzWzRiLddn8ahVOQ==}
