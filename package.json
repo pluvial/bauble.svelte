@@ -27,6 +27,7 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "next",
+		"@sveltejs/adapter-vercel": "next",
 		"@sveltejs/kit": "next",
 		"@sveltejs/package": "next",
 		"@types/big.js": "^6.1.6",
