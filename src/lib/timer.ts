@@ -75,8 +75,7 @@ export class Timer {
 	}
 
 	constructor() {
-		const effect = derived(
-			[this.loopStart, this.loopEnd, this.loopMode],
+		derived([this.loopStart, this.loopEnd, this.loopMode], (stores) => stores).subscribe(
 			([loopStart, loopEnd, loopMode]) => {
 				if (loopMode != LoopMode.Reverse) {
 					this.rate = 1;
@@ -88,9 +87,7 @@ export class Timer {
 				this.t.set(t);
 			}
 		);
-		effect.subscribe(() => {
-			// empty
-		});
+		// TODO: clean up effect
 	}
 
 	tick(delta: Seconds, isAnimation: boolean) {

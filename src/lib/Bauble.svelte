@@ -8,13 +8,16 @@
 </script>
 
 <script lang="ts">
-	import { writable, type Writable } from 'svelte/store';
+	import { derived, writable, type Writable } from 'svelte/store';
 	import type { EditorView } from '@codemirror/view';
 	import type { Property } from 'csstype';
 	import { vec2 } from 'gl-matrix';
 	import type { BaubleModule } from 'bauble-runtime';
+	import installCodeMirror from './editor';
 	import type { default as OutputChannel } from './output-channel';
-	import { Timer } from './timer';
+	import RenderLoop from './render-loop';
+	import Renderer from './renderer';
+	import { Timer, TimerState } from './timer';
 	import { mod } from './util';
 	import AnimationToolbar from './AnimationToolbar.svelte';
 	import EditorToolbar from './EditorToolbar.svelte';
@@ -81,10 +84,10 @@
 	const canvasSize = writable(size);
 	const pixelRatio = writable(window.devicePixelRatio);
 	const imageRendering = writable<Property.ImageRendering>('auto');
-	$: canvasResolution = {
+	const canvasResolution = derived([canvasSize, pixelRatio], ([size, dpr]) => ({
 		width: $pixelRatio * $canvasSize.width,
 		height: $pixelRatio * $canvasSize.height
-	};
+	}));
 	const renderType = writable(0);
 	const quadView = writable(false);
 	const quadSplitPoint = writable({ x: 0.5, y: 0.5 });
@@ -97,6 +100,7 @@
 	const isVisible = writable(false);
 
 	const timer = new Timer();
+	const timerState = timer.state;
 
 	const intersectionObserver = new IntersectionObserver((entries) => {
 		for (const entry of entries) {
@@ -105,7 +109,90 @@
 	});
 
 	onMount(() => {
-		// TODO
+		intersectionObserver.observe(canvas);
+		editor = installCodeMirror({
+			initialScript: initialScript,
+			parent: editorContainer,
+			canSave: canSave,
+			onChange: () => ($scriptDirty = true)
+		});
+		// TODO: these should really be named
+		const renderer = new Renderer(
+			canvas,
+			timer.t,
+			renderType,
+			rotation,
+			origin,
+			zoom,
+			quadView,
+			quadSplitPoint,
+			() => $canvasResolution
+		);
+
+		const renderLoop = new RenderLoop((elapsed) => {
+			if (!$isVisible) {
+				return;
+			}
+			const isAnimation_ = $isAnimation;
+			const isTimeAdvancing = isAnimation_ && $timerState !== TimerState.Paused;
+			if (isTimeAdvancing) {
+				// If you hit the stop button, we want to redraw at zero,
+				// but we don't want to advance time forward by 16ms.
+				timer.tick(elapsed, isAnimation_);
+				// Normally the advancing of time is sufficient
+				// to reschedule the loop, but if you're just
+				// resuming after a stop the initial elapsed time
+				// is 0.
+				if (elapsed === 0) {
+					renderLoop.schedule();
+				}
+			}
+
+			if ($scriptDirty) {
+				outputContainer.innerHTML = '';
+				outputChannel.target = outputContainer;
+				const result = runtime.evaluate_script(editor.state.doc.toString());
+				$scriptDirty = false;
+				if (result.isError) {
+					$evaluationState = EvaluationState.EvaluationError;
+					console.error(result.error);
+				} else {
+					try {
+						renderer.recompileShader(result.shaderSource);
+						$evaluationState = EvaluationState.Success;
+						$isAnimation = result.isAnimated;
+					} catch (e: any) {
+						$evaluationState = EvaluationState.ShaderCompilationError;
+						outputChannel.print(e.toString(), true);
+						if (e.cause != null) {
+							outputChannel.print(e.cause, true);
+						}
+					}
+				}
+				outputChannel.target = null;
+			}
+			renderer.draw();
+		});
+
+		derived(
+			[
+				isVisible,
+				rotation,
+				origin,
+				zoom,
+				scriptDirty,
+				renderType,
+				timer.state,
+				timer.t,
+				quadView,
+				quadSplitPoint,
+				canvasResolution
+			],
+			(stores) => stores
+		).subscribe(() => {
+			renderLoop.schedule();
+		});
+		// TODO: clean up effect
 	});
 
 	let canvasPointerAt = [0, 0];
@@ -361,8 +448,8 @@
 			bind:this={canvas}
 			class="render-target"
 			style:image-rendering={$imageRendering}
-			width={canvasResolution.width}
-			height={canvasResolution.height}
+			width={$canvasResolution.width}
+			height={$canvasResolution.height}
 			tabindex={focusable ? 0 : undefined}
 			on:wheel={onWheel}
 			on:dblclick={onDblClick}
