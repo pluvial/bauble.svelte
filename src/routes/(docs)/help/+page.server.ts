@@ -1,12 +1,11 @@
-import fs from 'fs/promises';
 import { marked } from 'marked';
 import type { PageServerLoad } from './$types';
 
-const readFile = (path: string) =>
-	fs.readFile(new URL(path, import.meta.url), { encoding: 'utf-8' });
-
 export const load: PageServerLoad = async () => {
-	const [file, preamble] = await Promise.all([readFile('content.md'), readFile('preamble.md')]);
+	const [{ default: file }, { default: preamble }] = await Promise.all([
+		import('/docs/help.md?raw'),
+		import('/docs/preamble.md?raw')
+	]);
 	const content = marked(file)
 		.replaceAll('<pre><code>', '<div class="bauble-placeholder"><div class="script">')
 		.replaceAll('</code></pre>', '</div></div>');
