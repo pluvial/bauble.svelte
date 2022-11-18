@@ -1,7 +1,6 @@
-import { TAU } from './util';
-import * as Signal from './signals';
-import { createEffect, untrack, batch } from 'solid-js';
+import { derived, get, writable } from 'svelte/store';
 import type { Seconds } from './types';
+import { TAU } from './util';
 
 export enum TimerState {
 	Ambivalent,
@@ -55,56 +54,58 @@ function clampTime(
 }
 
 export class Timer {
-	t = Signal.create(0 as Seconds);
-	loopStart = Signal.create(0 as Seconds);
-	loopEnd = Signal.create(TAU as Seconds);
-	loopMode = Signal.create(LoopMode.NoLoop);
-	state = Signal.create(TimerState.Ambivalent);
+	t = writable(0 as Seconds);
+	loopStart = writable(0 as Seconds);
+	loopEnd = writable(TAU as Seconds);
+	loopMode = writable(LoopMode.NoLoop);
+	state = writable(TimerState.Ambivalent);
 	private rate = 1;
 
 	playPause() {
-		Signal.update(this.state, (state) =>
+		this.state.update((state) =>
 			state === TimerState.Playing ? TimerState.Paused : TimerState.Playing
 		);
 	}
 
 	stop() {
-		batch(() => {
-			Signal.set(this.t, Signal.get(this.loopStart));
-			Signal.set(this.state, TimerState.Paused);
-		});
+		// TODO: batch?
+		this.t.set(get(this.loopStart));
+		this.state.set(TimerState.Paused);
 		this.rate = 1;
 	}
 
 	constructor() {
-		createEffect(() => {
-			const loopStart = Signal.get(this.loopStart);
-			const loopEnd = Signal.get(this.loopEnd);
-			const loopMode = Signal.get(this.loopMode);
-			if (loopMode != LoopMode.Reverse) {
-				this.rate = 1;
+		const effect = derived(
+			[this.loopStart, this.loopEnd, this.loopMode],
+			([loopStart, loopEnd, loopMode]) => {
+				if (loopMode != LoopMode.Reverse) {
+					this.rate = 1;
+				}
+				const [t, rate] = clampTime(get(this.t), loopStart, loopEnd, loopMode);
+				if (rate !== 0) {
+					this.rate = rate;
+				}
+				this.t.set(t);
 			}
-			const [t, rate] = clampTime(untrack(Signal.getter(this.t)), loopStart, loopEnd, loopMode);
-			if (rate !== 0) {
-				this.rate = rate;
-			}
-			Signal.set(this.t, t);
+		);
+		effect.subscribe(() => {
+			// empty
 		});
 	}
 
 	tick(delta: Seconds, isAnimation: boolean) {
-		if (isAnimation && Signal.get(this.state) === TimerState.Ambivalent) {
-			Signal.set(this.state, TimerState.Playing);
+		if (isAnimation && get(this.state) === TimerState.Ambivalent) {
+			this.state.set(TimerState.Playing);
 		}
 
 		const [t, rate] = clampTime(
-			((Signal.get(this.t) as number) + this.rate * (delta as number)) as Seconds,
-			Signal.get(this.loopStart),
-			Signal.get(this.loopEnd),
-			Signal.get(this.loopMode)
+			((get(this.t) as number) + this.rate * (delta as number)) as Seconds,
+			get(this.loopStart),
+			get(this.loopEnd),
+			get(this.loopMode)
 		);
 
-		Signal.set(this.t, t);
+		this.t.set(t);
 		if (rate !== 0) {
 			this.rate = rate;
 		}

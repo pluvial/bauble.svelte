@@ -13,15 +13,27 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"dependencies": {
-		"bauble-runtime": "workspace:*"
+		"@codemirror/commands": "^6.0.1",
+		"@codemirror/language": "^6.2.1",
+		"@codemirror/state": "^6.1.0",
+		"@codemirror/view": "^6.1.2",
+		"@lezer/common": "^1.0.0",
+		"@lezer/highlight": "^1.0.0",
+		"bauble-runtime": "workspace:*",
+		"big.js": "^6.2.1",
+		"codemirror": "^6.0.1",
+		"codemirror-lang-janet": "^0.2.0",
+		"gl-matrix": "^3.4.3"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "next",
 		"@sveltejs/kit": "next",
 		"@sveltejs/package": "next",
+		"@types/big.js": "^6.1.6",
 		"@types/marked": "^4.0.7",
 		"@typescript-eslint/eslint-plugin": "^5.27.0",
 		"@typescript-eslint/parser": "^5.27.0",
+		"csstype": "^3.1.1",
 		"eslint": "^8.16.0",
 		"eslint-config-prettier": "^8.3.0",
 		"eslint-plugin-svelte3": "^4.0.0",
