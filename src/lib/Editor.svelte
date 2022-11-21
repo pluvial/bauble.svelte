@@ -164,6 +164,9 @@
 		// TODO: style the "find/replace" box
 	});
 
+	let ctrlClickedAt = 0;
+	const isTryingToEngageNumberDrag = () => performance.now() - ctrlClickedAt < 100;
+
 	onMount(() => {
 		const keyBindings = [indentWithTab];
 		if (canSave) {
@@ -187,56 +190,15 @@
 			doc: initialScript
 		});
 
-		let ctrlClickedAt = 0;
-		const isTryingToEngageNumberDrag = () => {
-			return performance.now() - ctrlClickedAt < 100;
-		};
-
-		editorContainer.addEventListener('pointerdown', (e) => {
-			if ((e.buttons === 1 || e.buttons === 2) && e.ctrlKey) {
-				ctrlClickedAt = performance.now();
-				editorContainer.setPointerCapture(e.pointerId);
-				e.preventDefault();
-			}
-		});
-
-		editorContainer.addEventListener('contextmenu', (e) => {
-			if (isTryingToEngageNumberDrag()) {
-				e.preventDefault();
-			}
-		});
-
-		editorContainer.addEventListener('pointermove', (e) => {
-			if (editorContainer.hasPointerCapture(e.pointerId)) {
-				alterNumber(editor, Big(e.movementX).times('1'));
-			}
-		});
-
-		// There is a bug in Firefox where ctrl-click fires as
-		// a pointermove event instead of a pointerdown event,
-		// and then will not respect setPointerCapture() when
-		// called from the pointermove event.
-		//
-		// https://bugzilla.mozilla.org/show_bug.cgi?id=1504210
-		//
-		// So on Firefox you have to use an actual right-click.
-		// It's very annoying. This is an *okay* workaround.
-		document.addEventListener('pointermove', (e) => {
-			if (!editor.hasFocus) {
-				return;
-			}
-			if (e.shiftKey && e.metaKey) {
-				alterNumber(editor, Big(e.movementX).times('1'));
-			}
-		});
-
 		if (canSave) {
 			setInterval(function () {
 				save(editor);
 			}, 30 * 1000);
+
 			document.addEventListener('pagehide', () => {
 				save(editor);
 			});
+
 			let savedBefore = false;
 			// iOS Safari doesn't support beforeunload,
 			// but it does support unload.
@@ -244,6 +206,7 @@
 				savedBefore = true;
 				save(editor);
 			});
+
 			window.addEventListener('unload', () => {
 				if (!savedBefore) {
 					save(editor);
@@ -253,7 +216,47 @@
 	});
 </script>
 
-<div class="editor-container" bind:this={editorContainer} />
+<div
+	class="editor-container"
+	bind:this={editorContainer}
+	on:pointerdown={(e) => {
+		if ((e.buttons === 1 || e.buttons === 2) && e.ctrlKey) {
+			ctrlClickedAt = performance.now();
+			editorContainer.setPointerCapture(e.pointerId);
+			e.preventDefault();
+		}
+	}}
+	on:contextmenu={(e) => {
+		if (isTryingToEngageNumberDrag()) {
+			e.preventDefault();
+		}
+	}}
+	on:pointermove={(e) => {
+		if (editorContainer.hasPointerCapture(e.pointerId)) {
+			alterNumber(editor, Big(e.movementX).times('1'));
+		}
+	}}
+/>
+
+<svelte:body
+	on:pointermove={(e) => {
+		// There is a bug in Firefox where ctrl-click fires as
+		// a pointermove event instead of a pointerdown event,
+		// and then will not respect setPointerCapture() when
+		// called from the pointermove event.
+		//
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=1504210
+		//
+		// So on Firefox you have to use an actual right-click.
+		// It's very annoying. This is an *okay* workaround.
+		if (!editor.hasFocus) {
+			return;
+		}
+		if (e.shiftKey && e.metaKey) {
+			alterNumber(editor, Big(e.movementX).times('1'));
+		}
+	}}
+/>
 
 <style>
 	.editor-container {
