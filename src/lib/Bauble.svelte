@@ -14,7 +14,6 @@
 	import type { Property } from 'csstype';
 	import { vec2 } from 'gl-matrix';
 	import type { BaubleModule } from 'bauble-runtime';
-	import installCodeMirror from './editor';
 	import type { OutputChannel } from './output-channel';
 	import { createRenderLoop } from './render-loop';
 	import { createRenderer } from './renderer';
@@ -22,6 +21,7 @@
 	import type { Seconds } from './types';
 	import { mod, TAU } from './util';
 	import AnimationToolbar from './AnimationToolbar.svelte';
+	import Editor from './Editor.svelte';
 	import EditorToolbar from './EditorToolbar.svelte';
 	import RenderToolbar from './RenderToolbar.svelte';
 	import ResizableArea from './ResizableArea.svelte';
@@ -69,7 +69,6 @@
 	}
 
 	let canvasContainer: HTMLDivElement;
-	let editorContainer: HTMLDivElement;
 	let canvas: HTMLCanvasElement;
 	let editor: EditorView;
 	let outputContainer: HTMLElement;
@@ -135,12 +134,6 @@
 
 	onMount(() => {
 		intersectionObserver.observe(canvas);
-		editor = installCodeMirror({
-			initialScript: initialScript,
-			parent: editorContainer,
-			canSave: canSave,
-			onChange: () => (scriptDirty = true)
-		});
 		// TODO: these should really be named
 		const renderer = createRenderer(
 			canvas,
@@ -490,7 +483,7 @@
 	/>
 	<div class="code-container" bind:this={codeContainer}>
 		<EditorToolbar state={evaluationState} />
-		<div class="editor-container" bind:this={editorContainer} />
+		<Editor bind:editor {initialScript} {canSave} on:change={() => (scriptDirty = true)} />
 		<ResizableArea bind:outputContainer />
 	</div>
 </div>
@@ -535,17 +528,6 @@
 		flex-direction: column;
 		/* TODO: this should be width OR height depending on orientation */
 		flex: 0 1 var(--canvas-width);
-	}
-
-	.editor-container {
-		overflow: hidden;
-		display: flex;
-		flex: 1;
-	}
-
-	.editor-container > :global(*) {
-		flex: 1;
-		max-width: 100%; /* required for horizontal scrolling */
 	}
 
 	.resize-handle {
