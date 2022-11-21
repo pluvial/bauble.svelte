@@ -16,7 +16,7 @@
 	import type { BaubleModule } from 'bauble-runtime';
 	import installCodeMirror from './editor';
 	import type { default as OutputChannel } from './output-channel';
-	import RenderLoop from './render-loop';
+	import { createRenderLoop } from './render-loop';
 	import { createRenderer } from './renderer';
 	import { createTimer, LoopMode, TimerState } from './timer';
 	import type { Seconds } from './types';
@@ -156,7 +156,7 @@
 		const unsubscribers: Unsubscriber[] = [];
 		unsubscribers.push(rendererVars.subscribe(() => renderer.updateCamera()));
 
-		const renderLoop = new RenderLoop((elapsed) => {
+		const renderLoop = createRenderLoop((elapsed) => {
 			if (!isVisible) {
 				return;
 			}
