@@ -3,6 +3,7 @@
 	import type { BaubleModule } from 'bauble-runtime';
 	import { Bauble, createOutputChannel } from '$lib';
 	import type { PageData } from './$types';
+	import './styles.css';
 
 	export let data: PageData;
 	$: ({ preamble, toc, content } = data);

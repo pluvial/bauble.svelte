@@ -1,0 +1,61 @@
+.bauble-placeholder {
+	height: 256px;
+	border-radius: 2px;
+	overflow: hidden;
+}
+
+.bauble-placeholder > .script {
+	display: none;
+}
+
+.bauble-placeholder .canvas-container,
+.bauble-placeholder .code-container {
+	position: relative;
+}
+
+.bauble-placeholder .bauble canvas {
+	max-height: calc(min(100%, var(--canvas-height)));
+}
+
+.bauble-placeholder .toolbar {
+	background-color: initial;
+}
+
+.bauble-placeholder .toolbar:last-child {
+	bottom: 0;
+}
+
+.bauble-placeholder .toolbar {
+	z-index: 1;
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+.bauble-placeholder .code-container .toolbar {
+	background-image: none;
+	border: none;
+	pointer-events: none;
+}
+
+.bauble-placeholder .code-container .toolbar .indicator.compilation-error svg {
+	fill: var(--background);
+}
+
+.bauble-placeholder .canvas-container .toolbar input[inputmode='numeric'] {
+	background: transparent;
+}
+
+.bauble-placeholder .canvas-container .toolbar {
+	transition: visibility 0s 300ms, opacity 150ms 300ms;
+}
+
+.bauble-placeholder .canvas-container:not(:hover) .toolbar {
+	opacity: 0;
+	visibility: hidden;
+	transition: visibility 0s 450ms, opacity 150ms 300ms;
+}
+
+.bauble-placeholder {
+	border: solid 2px var(--window);
+}
