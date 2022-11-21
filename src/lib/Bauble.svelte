@@ -18,7 +18,7 @@
 	import type { default as OutputChannel } from './output-channel';
 	import RenderLoop from './render-loop';
 	import Renderer from './renderer';
-	import { LoopMode, Timer, TimerState } from './timer';
+	import { createTimer, LoopMode, TimerState } from './timer';
 	import type { Seconds } from './types';
 	import { mod, TAU } from './util';
 	import AnimationToolbar from './AnimationToolbar.svelte';
@@ -99,7 +99,7 @@
 	let loopEnd = TAU as Seconds;
 	let loopMode = LoopMode.NoLoop;
 
-	const timer = new Timer(
+	const timer = createTimer(
 		() => loopStart,
 		() => loopEnd,
 		() => loopMode

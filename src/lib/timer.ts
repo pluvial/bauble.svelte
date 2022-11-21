@@ -53,56 +53,60 @@ function clampTime(
 	return [t as Seconds, rate];
 }
 
-export class Timer {
-	t = writable(0 as Seconds);
-	state = writable(TimerState.Ambivalent);
-	private rate = 1;
+export function createTimer(
+	loopStart = () => 0 as Seconds,
+	loopEnd = () => TAU as Seconds,
+	loopMode = () => LoopMode.NoLoop
+) {
+	const t = writable(0 as Seconds);
+	const state = writable(TimerState.Ambivalent);
+	let rate = 1;
+	return {
+		t,
+		state,
 
-	playPause() {
-		this.state.update((state) =>
-			state === TimerState.Playing ? TimerState.Paused : TimerState.Playing
-		);
-	}
+		stop() {
+			// TODO: need to batch?
+			t.set(loopStart());
+			state.set(TimerState.Paused);
+			rate = 1;
+		},
 
-	stop() {
-		// TODO: batch?
-		this.t.set(this.loopStart());
-		this.state.set(TimerState.Paused);
-		this.rate = 1;
-	}
+		playPause() {
+			state.update((state) =>
+				state === TimerState.Playing ? TimerState.Paused : TimerState.Playing
+			);
+		},
 
-	constructor(
-		public loopStart = () => 0 as Seconds,
-		public loopEnd = () => TAU as Seconds,
-		public loopMode = () => LoopMode.NoLoop
-	) {}
+		updateLoop(loopStart: Seconds, loopEnd: Seconds, loopMode: LoopMode) {
+			if (loopMode != LoopMode.Reverse) {
+				rate = 1;
+			}
+			const [tClamped, rateClamped] = clampTime(get(t), loopStart, loopEnd, loopMode);
+			if (rateClamped !== 0) {
+				rate = rateClamped;
+			}
+			t.set(tClamped);
+		},
 
-	updateLoop(loopStart: Seconds, loopEnd: Seconds, loopMode: LoopMode) {
-		if (loopMode != LoopMode.Reverse) {
-			this.rate = 1;
+		tick(delta: Seconds, isAnimation: boolean) {
+			if (isAnimation && get(state) === TimerState.Ambivalent) {
+				state.set(TimerState.Playing);
+			}
+
+			const [tClamped, rateClamped] = clampTime(
+				((get(t) as number) + rate * (delta as number)) as Seconds,
+				loopStart(),
+				loopEnd(),
+				loopMode()
+			);
+
+			t.set(tClamped);
+			if (rateClamped !== 0) {
+				rate = rateClamped;
+			}
 		}
-		const [t, rate] = clampTime(get(this.t), loopStart, loopEnd, loopMode);
-		if (rate !== 0) {
-			this.rate = rate;
-		}
-		this.t.set(t);
-	}
-
-	tick(delta: Seconds, isAnimation: boolean) {
-		if (isAnimation && get(this.state) === TimerState.Ambivalent) {
-			this.state.set(TimerState.Playing);
-		}
-
-		const [t, rate] = clampTime(
-			((get(this.t) as number) + this.rate * (delta as number)) as Seconds,
-			this.loopStart(),
-			this.loopEnd(),
-			this.loopMode()
-		);
-
-		this.t.set(t);
-		if (rate !== 0) {
-			this.rate = rate;
-		}
-	}
+	};
 }
+
+export type Timer = ReturnType<typeof createTimer>;
