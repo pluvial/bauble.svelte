@@ -15,7 +15,7 @@
 	import { vec2 } from 'gl-matrix';
 	import type { BaubleModule } from 'bauble-runtime';
 	import installCodeMirror from './editor';
-	import type { default as OutputChannel } from './output-channel';
+	import type { OutputChannel } from './output-channel';
 	import { createRenderLoop } from './render-loop';
 	import { createRenderer } from './renderer';
 	import { createTimer, LoopMode, TimerState } from './timer';

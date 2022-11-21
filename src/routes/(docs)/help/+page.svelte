@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onDestroy, onMount, SvelteComponent } from 'svelte';
 	import type { BaubleModule } from 'bauble-runtime';
-	import { Bauble, OutputChannel } from '$lib';
+	import { Bauble, createOutputChannel } from '$lib';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 	$: ({ preamble, toc, content } = data);
 
-	const outputChannel = new OutputChannel();
+	const outputChannel = createOutputChannel();
 
 	const baubleOpts = {
 		print(x: string) {

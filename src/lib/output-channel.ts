@@ -1,23 +1,25 @@
-export default class OutputChannel {
-	private _target: HTMLElement | null = null;
-
-	set target(value: HTMLElement | null) {
-		this._target = value;
-	}
-
-	print(text: string, isErr: boolean) {
-		if (this._target == null) {
-			if (isErr) {
-				console.error(text);
+export function createOutputChannel() {
+	let target: HTMLElement | null = null;
+	return {
+		print(text: string, isErr: boolean) {
+			if (target == null) {
+				if (isErr) {
+					console.error(text);
+				} else {
+					console.log(text);
+				}
 			} else {
-				console.log(text);
+				const span = document.createElement('span');
+				span.classList.toggle('err', isErr);
+				span.appendChild(document.createTextNode(text));
+				span.appendChild(document.createTextNode('\n'));
+				target.appendChild(span);
 			}
-		} else {
-			const span = document.createElement('span');
-			span.classList.toggle('err', isErr);
-			span.appendChild(document.createTextNode(text));
-			span.appendChild(document.createTextNode('\n'));
-			this._target.appendChild(span);
+		},
+		set target(value: HTMLElement | null) {
+			target = value;
 		}
-	}
+	};
 }
+
+export type OutputChannel = ReturnType<typeof createOutputChannel>;

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { BaubleModule } from 'bauble-runtime';
-	import { Bauble, OutputChannel, Storage } from '$lib';
+	import { Bauble, createOutputChannel, Storage } from '$lib';
 
-	const outputChannel = new OutputChannel();
+	const outputChannel = createOutputChannel();
 
 	const baubleOpts = {
 		print(x: string) {
