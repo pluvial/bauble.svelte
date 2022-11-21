@@ -1,36 +1,25 @@
 <script lang="ts">
-	import type { Writable } from 'svelte/store';
+	import { createEventDispatcher } from 'svelte';
 	import Choices from './Choices.svelte';
 	import Icon from './Icon.svelte';
 
+	const dispatch = createEventDispatcher();
+
 	// TODO: render type should be an enum
-	export let renderType: Writable<number>;
-	export let quadView: Writable<boolean>;
-	export let rotation: Writable<{ x: number; y: number }>;
-	export let origin: Writable<{ x: number; y: number; z: number }>;
-	export let zoom: Writable<number>;
-
-	export let resetCamera: (
-		rotation: Writable<{ x: number; y: number }>,
-		origin: Writable<{ x: number; y: number; z: number }>,
-		zoom: Writable<number>
-	) => void;
-
-	function toggleQuadView() {
-		quadView.update((x) => !x);
-	}
+	export let renderType: number;
+	export let quadView: boolean;
 </script>
 
 <div class="toolbar">
-	<button title="Reset camera" on:click={() => resetCamera(rotation, origin, zoom)}>
+	<button title="Reset camera" on:click={() => dispatch('reset-camera')}>
 		<Icon name="box" />
 	</button>
-	<button title="Toggle quad view" on:click={toggleQuadView}>
-		<Icon name={$quadView ? 'grid-fill' : 'grid'} />
+	<button title="Toggle quad view" on:click={() => dispatch('toggle-quad-view')}>
+		<Icon name={quadView ? 'grid-fill' : 'grid'} />
 	</button>
 	<div class="spacer" />
 	<Choices
-		selected={renderType}
+		bind:selected={renderType}
 		choices={[
 			{ value: 0, icon: 'camera', title: 'Render normally' },
 			{ value: 1, icon: 'magnet', title: 'Debug number of raymarching steps' },

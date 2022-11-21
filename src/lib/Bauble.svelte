@@ -53,11 +53,7 @@
 		scale: number;
 	}
 
-	const resetCamera = (
-		rotation: Writable<{ x: number; y: number }>,
-		origin: Writable<{ x: number; y: number; z: number }>,
-		zoom: Writable<number>
-	) => {
+	const resetCamera = () => {
 		// TODO: batch?
 		rotation.set(defaultCamera.rotation);
 		origin.set(defaultCamera.origin);
@@ -305,7 +301,7 @@
 					break;
 			}
 		} else {
-			resetCamera(rotation, origin, zoom);
+			resetCamera();
 		}
 	};
 
@@ -443,7 +439,12 @@
 	style:--canvas-height="{$canvasSize.height}px"
 >
 	<div class="canvas-container" bind:this={canvasContainer}>
-		<RenderToolbar {renderType} {quadView} {rotation} {origin} {zoom} {resetCamera} />
+		<RenderToolbar
+			bind:renderType={$renderType}
+			quadView={$quadView}
+			on:toggle-quad-view={() => ($quadView = !$quadView)}
+			on:reset-camera={resetCamera}
+		/>
 		<canvas
 			bind:this={canvas}
 			class="render-target"

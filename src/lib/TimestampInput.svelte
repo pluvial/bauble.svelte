@@ -1,15 +1,17 @@
 <script lang="ts">
-	import type { Writable } from 'svelte/store';
 	import type { Seconds } from './types';
 
-	export let store: Writable<Seconds>;
+	export let time: Seconds;
 
-	function onChange(e: Event) {
-		$store = parseInt((e.currentTarget as HTMLInputElement).value, 10) as Seconds;
+	let value = time.toFixed(2);
+
+	function onChange() {
+		value = Number(value).toFixed(2);
+		time = Number(value) as Seconds;
 	}
 </script>
 
-<input inputmode="numeric" value={$store.toFixed(2)} autocomplete="off" on:change={onChange} />
+<input inputmode="numeric" bind:value autocomplete="off" on:change={onChange} />
 
 <style>
 	input {

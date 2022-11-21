@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Writable } from 'svelte/store';
 	import Icon from './Icon.svelte';
 
 	type T = any;
@@ -10,7 +9,7 @@
 		icon: string;
 	}
 
-	export let selected: Writable<T>;
+	export let selected: T;
 	export let choices: ChoiceDescription<T>[];
 </script>
 
@@ -21,8 +20,8 @@
 				type="radio"
 				autocomplete="off"
 				{value}
-				checked={$selected === value}
-				on:change={() => ($selected = value)}
+				checked={selected === value}
+				on:change={() => (selected = value)}
 			/>
 			<Icon name={icon} />
 		</label>

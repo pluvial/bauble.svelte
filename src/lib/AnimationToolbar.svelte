@@ -5,8 +5,7 @@
 	import TimestampInput from './TimestampInput.svelte';
 
 	export let timer: Timer;
-	const state = timer.state;
-	const t = timer.t;
+	const { state, t, loopMode, loopStart, loopEnd } = timer;
 </script>
 
 <div class="toolbar">
@@ -21,16 +20,16 @@
 	<div class="spacer" />
 	<!-- <div class="scrubber"></div> -->
 	<Choices
-		selected={timer.loopMode}
+		bind:selected={$loopMode}
 		choices={[
 			{ value: LoopMode.NoLoop, icon: 'arrow-bar-right', title: 'No loop' },
 			{ value: LoopMode.Wrap, icon: 'repeat', title: 'Loop' },
 			{ value: LoopMode.Reverse, icon: 'arrow-left-right', title: 'Loop back and forth' }
 		]}
 	/>
-	<TimestampInput store={timer.loopStart} />
+	<TimestampInput bind:time={$loopStart} />
 	<span class="text">to</span>
-	<TimestampInput store={timer.loopEnd} />
+	<TimestampInput bind:time={$loopEnd} />
 </div>
 
 <style>
