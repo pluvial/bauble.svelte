@@ -17,7 +17,7 @@
 	import installCodeMirror from './editor';
 	import type { default as OutputChannel } from './output-channel';
 	import RenderLoop from './render-loop';
-	import Renderer from './renderer';
+	import { createRenderer } from './renderer';
 	import { createTimer, LoopMode, TimerState } from './timer';
 	import type { Seconds } from './types';
 	import { mod, TAU } from './util';
@@ -142,7 +142,7 @@
 			onChange: () => (scriptDirty = true)
 		});
 		// TODO: these should really be named
-		const renderer = new Renderer(
+		const renderer = createRenderer(
 			canvas,
 			() => $timerT,
 			() => renderType,
