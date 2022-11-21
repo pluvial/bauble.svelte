@@ -4,6 +4,11 @@ import { clamp, TAU } from './util';
 
 const baseCameraDistance = 512;
 
+function assert<T>(value: T): NonNullable<T> {
+	if (value === null || value === undefined) throw new Error(`Assertion failed: ${value} value`);
+	return value;
+}
+
 function rotateXY(target: mat3, x: number, y: number) {
 	const sx = Math.sin(x);
 	const sy = Math.sin(y);
@@ -22,13 +27,13 @@ void main() {
 
 declare global {
 	interface ErrorConstructor {
-		new (message: string, info: { cause: any }): Error;
-		(message: string, info: { cause: any }): Error;
+		new (message?: string, options?: { cause?: string }): Error;
+		(message?: string, options?: { cause?: string }): Error;
 	}
 }
 
 function compileShader(gl: WebGLRenderingContext, type: number, source: string) {
-	const shader = gl.createShader(type)!;
+	const shader = assert(gl.createShader(type));
 	gl.shaderSource(shader, source);
 	gl.compileShader(shader);
 
@@ -81,7 +86,7 @@ export default class Renderer {
 			throw new Error('failed to create webgl2 context');
 		}
 
-		const program = gl.createProgram()!;
+		const program = assert(gl.createProgram());
 		gl.attachShader(program, compileShader(gl, gl.VERTEX_SHADER, vertexSource));
 
 		const left = -0.5 * canvas.width;
@@ -89,7 +94,7 @@ export default class Renderer {
 		const top = 0.5 * canvas.height;
 		const bottom = -0.5 * canvas.height;
 
-		const vertexBuffer = gl.createBuffer()!;
+		const vertexBuffer = assert(gl.createBuffer());
 		const vertexData = new Float32Array(6 * 3);
 		vertexData[0] = left;
 		vertexData[1] = top;
