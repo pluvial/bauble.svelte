@@ -12,7 +12,7 @@
 <input inputmode="numeric" value={$store.toFixed(2)} autocomplete="off" on:change={onChange} />
 
 <style>
-	input[inputmode='numeric'] {
+	input {
 		text-align: center;
 		border: none;
 		width: 6ch;
@@ -25,7 +25,7 @@
 		font-size: var(--monospace-size);
 	}
 
-	input[inputmode='numeric']:last-child {
+	input:last-child {
 		margin-right: 4px;
 	}
 </style>

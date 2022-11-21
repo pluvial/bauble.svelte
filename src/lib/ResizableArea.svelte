@@ -59,12 +59,15 @@
 		flex-basis: 4px;
 	}
 
-	.output-container:not(:empty) {
-		padding: 8px;
-	}
 	.output-container {
 		overflow: auto;
 		max-height: 25%;
+		font-family: var(--monospace-family);
+		font-size: var(--monospace-size);
+	}
+
+	.output-container:not(:empty) {
+		padding: 8px;
 	}
 
 	/* TODO: check this */
@@ -72,15 +75,11 @@
 		color: var(--red);
 	} */
 
-	.output-container {
-		font-family: var(--monospace-family);
-		font-size: var(--monospace-size);
-	}
-
 	@media all and (max-width: 512px) {
 		.resize-handle {
 			flex-basis: 12px;
 		}
+
 		.output-container {
 			height: 1.5em;
 		}

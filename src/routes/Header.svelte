@@ -20,25 +20,25 @@
 		display: flex;
 	}
 
-	header .title,
-	header .spacer {
+	.title,
+	.spacer {
 		flex: 1;
 	}
 
-	header a {
+	a {
 		text-decoration: none;
 	}
-	header a.text-link {
+	a.text-link {
 		padding: 0 var(--header-padding);
 	}
 
-	header a,
-	header a:visited,
-	header a:active {
+	a,
+	a:visited,
+	a:active {
 		color: var(--text-color);
 	}
 
-	header svg {
+	svg {
 		fill: var(--text-color);
 		width: 24px;
 		height: 24px;
@@ -47,10 +47,12 @@
 	header > :first-child {
 		padding-left: var(--header-padding);
 	}
+
 	header > :last-child {
 		padding-right: var(--header-padding);
 	}
-	header .image-link {
+
+	.image-link {
 		display: flex;
 		width: var(--header-height);
 		height: var(--header-height);

@@ -47,31 +47,30 @@
 	.toolbar:last-child {
 		border-top: solid 1px rgba(0, 0, 0, 0.25);
 	}
+
 	.toolbar:not(:last-child) {
 		border-bottom: solid 1px rgba(0, 0, 0, 0.25);
 	}
 
-	.toolbar .spacer {
+	.spacer {
 		flex: 1;
 	}
 
-	.toolbar .indicator {
+	.indicator {
 		min-width: var(--control-height);
-		display: flex;
-	}
-
-	.toolbar .indicator {
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
-	.toolbar .indicator :global(svg) {
+
+	.indicator :global(svg) {
 		border-radius: 12px;
 		padding: 2px;
 		width: 20px;
 		height: 20px;
 	}
-	.toolbar .indicator.compilation-error :global(svg) {
+
+	.indicator.compilation-error :global(svg) {
 		background-color: var(--red);
 		fill: var(--toolbar-bg);
 	}

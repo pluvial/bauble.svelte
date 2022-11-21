@@ -502,14 +502,14 @@
 		overflow: hidden;
 	}
 
-	.bauble .code-container {
+	.code-container {
 		display: flex;
 		flex-direction: column;
 		/* TODO: this should be width OR height depending on orientation */
 		flex: 1 1 var(--canvas-width);
 	}
 
-	.bauble .canvas-container {
+	.canvas-container {
 		display: flex;
 		justify-content: start;
 		align-items: center;
@@ -518,30 +518,30 @@
 		flex: 0 1 var(--canvas-width);
 	}
 
-	.bauble .editor-container {
+	.editor-container {
 		overflow: hidden;
 		display: flex;
 		flex: 1;
 	}
 
-	.bauble .editor-container > :global(*) {
+	.editor-container > :global(*) {
 		flex: 1;
 		max-width: 100%; /* required for horizontal scrolling */
 	}
 
-	.bauble .resize-handle {
+	.resize-handle {
 		flex: none;
 		flex-basis: 4px;
 		touch-action: none;
 	}
 
-	.bauble .canvas-resize-handle {
+	.canvas-resize-handle {
 		cursor: ew-resize;
 		background-color: var(--toolbar-bg);
 		background-image: var(--vertical-grip);
 	}
 
-	.bauble canvas {
+	canvas {
 		max-width: calc(min(100%, var(--canvas-width)));
 		max-height: calc(min(100% - 2 * var(--control-height), var(--canvas-height)));
 		touch-action: none;
@@ -551,10 +551,10 @@
 		.bauble {
 			flex-direction: column;
 		}
-		.bauble .resize-handle {
+		.resize-handle {
 			flex-basis: 12px;
 		}
-		.bauble .canvas-resize-handle {
+		.canvas-resize-handle {
 			background: var(--horizontal-grip);
 			cursor: ns-resize;
 		}

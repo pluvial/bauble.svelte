@@ -58,94 +58,57 @@
 		border-bottom: solid 1px rgba(0, 0, 0, 0.25);
 	}
 
-	.toolbar button:not(.hidden:first-child) + button,
-	.toolbar :global(label + label) {
+	button:not(.hidden:first-child) + button {
 		margin-left: -6px;
 	}
 
-	span.timestamp {
+	.timestamp {
 		font-family: var(--monospace-family);
 		font-size: var(--monospace-size);
 	}
 
-	.toolbar .spacer {
+	.spacer {
 		flex: 1;
 	}
-	/* .toolbar .scrubber {
+	/* .scrubber {
 		flex: 1;
 		background-color: #8f8;
 	} */
-	.toolbar .timestamp {
+	.timestamp {
 		padding: 0 1ch;
 	}
 
-	.toolbar .text {
+	.text {
 		padding: 0 4px;
 	}
 
-	.toolbar :global(fieldset) {
-		display: inline;
-		border: none;
-		padding: none;
-		white-space: nowrap;
-	}
-
-	.toolbar button {
+	button {
 		min-width: var(--control-height);
 		border: none;
 		cursor: pointer;
 		background-color: initial;
 	}
 
-	.toolbar :global(fieldset label) {
-		display: inline-block;
-		height: 100%;
-		cursor: pointer;
-		min-width: var(--control-height);
-		text-align: center;
-	}
-
-	.toolbar :global(fieldset input[type='radio']) {
-		display: none;
-	}
-
-	.toolbar button :global(svg),
-	.toolbar :global(fieldset input[type='radio'] + span),
-	.toolbar :global(fieldset input[type='radio'] + svg) {
+	button :global(svg) {
 		padding: 4px;
 		border-radius: 6px;
 	}
 
-	.toolbar :global(fieldset input[type='radio']:checked + span),
-	.toolbar :global(fieldset input[type='radio']:checked + svg) {
-		background-color: rgba(0, 0, 0, 0.15);
-	}
-
-	.toolbar button:hover :global(svg),
-	.toolbar :global(fieldset label:hover input[type='radio'] + span),
-	.toolbar :global(fieldset label:hover input[type='radio'] + svg) {
+	button:hover :global(svg) {
 		background-color: rgba(0, 0, 0, 0.1);
 	}
 
-	.toolbar button:active :global(svg),
-	.toolbar :global(fieldset label:hover input[type='radio']:checked + span),
-	.toolbar :global(fieldset label:hover input[type='radio']:checked + svg) {
+	button:active :global(svg) {
 		background-color: rgba(0, 0, 0, 0.2);
 	}
 
-	.toolbar :global(fieldset) {
-		display: flex;
-		flex-direction: row;
-	}
-	.toolbar :global(fieldset label),
-	.toolbar button {
+	button {
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
 
-	.toolbar :global(fieldset label svg),
-	.toolbar button :global(svg) {
+	button :global(svg) {
 		width: 20px;
 		height: 20px;
 	}
