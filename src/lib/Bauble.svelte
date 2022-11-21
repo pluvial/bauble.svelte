@@ -8,7 +8,7 @@
 </script>
 
 <script lang="ts">
-	import { derived, writable, type Writable } from 'svelte/store';
+	import { derived, writable } from 'svelte/store';
 	import type { EditorView } from '@codemirror/view';
 	import type { Property } from 'csstype';
 	import { vec2 } from 'gl-matrix';
@@ -77,32 +77,48 @@
 	let isGesturing = false;
 	let gestureEndedAt = 0;
 
-	const canvasSize = writable(size);
-	const pixelRatio = writable(window.devicePixelRatio);
-	const imageRendering = writable<Property.ImageRendering>('auto');
-	const canvasResolution = derived([canvasSize, pixelRatio], ([size, dpr]) => ({
-		width: $pixelRatio * $canvasSize.width,
-		height: $pixelRatio * $canvasSize.height
-	}));
-	const renderType = writable(0);
-	const quadView = writable(false);
-	const quadSplitPoint = writable({ x: 0.5, y: 0.5 });
+	const canvasSize = size;
+	let pixelRatio = window.devicePixelRatio;
+	let imageRendering: Property.ImageRendering = 'auto';
+	$: canvasResolution = {
+		width: pixelRatio * canvasSize.width,
+		height: pixelRatio * canvasSize.height
+	};
+	let renderType = 0;
+	let quadView = false;
+	let quadSplitPoint = { x: 0.5, y: 0.5 };
 	const zoom = writable(defaultCamera.zoom);
 	const rotation = writable(defaultCamera.rotation);
 	const origin = writable(defaultCamera.origin);
-	const scriptDirty = writable(true);
-	const evaluationState = writable(EvaluationState.Unknown);
-	const isAnimation = writable(false);
-	const isVisible = writable(false);
+	let scriptDirty = true;
+	let evaluationState = EvaluationState.Unknown;
+	let isAnimation = false;
+	let isVisible = false;
 
 	const timer = new Timer();
 	const timerState = timer.state;
+	const timerT = timer.t;
 
 	const intersectionObserver = new IntersectionObserver((entries) => {
 		for (const entry of entries) {
-			$isVisible = entry.isIntersecting;
+			isVisible = entry.isIntersecting;
 		}
 	});
+
+	const vars = writable([
+		isVisible,
+		scriptDirty,
+		renderType,
+		quadView,
+		quadSplitPoint,
+		canvasResolution
+	]);
+	$: $vars = [isVisible, scriptDirty, renderType, quadView, quadSplitPoint, canvasResolution];
+
+	const renderVars = derived(
+		[rotation, origin, zoom, timer.state, timer.t, vars],
+		(stores) => stores
+	);
 
 	onMount(() => {
 		intersectionObserver.observe(canvas);
@@ -110,31 +126,30 @@
 			initialScript: initialScript,
 			parent: editorContainer,
 			canSave: canSave,
-			onChange: () => ($scriptDirty = true)
+			onChange: () => (scriptDirty = true)
 		});
 		// TODO: these should really be named
 		const renderer = new Renderer(
 			canvas,
-			timer.t,
-			renderType,
+			() => $timerT,
+			() => renderType,
 			rotation,
 			origin,
 			zoom,
-			quadView,
-			quadSplitPoint,
-			() => $canvasResolution
+			() => quadView,
+			() => quadSplitPoint,
+			() => canvasResolution
 		);
 
 		const renderLoop = new RenderLoop((elapsed) => {
-			if (!$isVisible) {
+			if (!isVisible) {
 				return;
 			}
-			const isAnimation_ = $isAnimation;
-			const isTimeAdvancing = isAnimation_ && $timerState !== TimerState.Paused;
+			const isTimeAdvancing = isAnimation && $timerState !== TimerState.Paused;
 			if (isTimeAdvancing) {
 				// If you hit the stop button, we want to redraw at zero,
 				// but we don't want to advance time forward by 16ms.
-				timer.tick(elapsed, isAnimation_);
+				timer.tick(elapsed, isAnimation);
 				// Normally the advancing of time is sufficient
 				// to reschedule the loop, but if you're just
 				// resuming after a stop the initial elapsed time
@@ -144,21 +159,21 @@
 				}
 			}
 
-			if ($scriptDirty) {
+			if (scriptDirty) {
 				outputContainer.innerHTML = '';
 				outputChannel.target = outputContainer;
 				const result = runtime.evaluate_script(editor.state.doc.toString());
-				$scriptDirty = false;
+				scriptDirty = false;
 				if (result.isError) {
-					$evaluationState = EvaluationState.EvaluationError;
+					evaluationState = EvaluationState.EvaluationError;
 					console.error(result.error);
 				} else {
 					try {
 						renderer.recompileShader(result.shaderSource);
-						$evaluationState = EvaluationState.Success;
-						$isAnimation = result.isAnimated;
+						evaluationState = EvaluationState.Success;
+						isAnimation = result.isAnimated;
 					} catch (e: any) {
-						$evaluationState = EvaluationState.ShaderCompilationError;
+						evaluationState = EvaluationState.ShaderCompilationError;
 						outputChannel.print(e.toString(), true);
 						if (e.cause != null) {
 							outputChannel.print(e.cause, true);
@@ -169,26 +184,7 @@
 			}
 			renderer.draw();
 		});
-
-		derived(
-			[
-				isVisible,
-				rotation,
-				origin,
-				zoom,
-				scriptDirty,
-				renderType,
-				timer.state,
-				timer.t,
-				quadView,
-				quadSplitPoint,
-				canvasResolution
-			],
-			(stores) => stores
-		).subscribe(() => {
-			renderLoop.schedule();
-		});
-		// TODO: clean up effect
+		return renderVars.subscribe(() => renderLoop.schedule());
 	});
 
 	let canvasPointerAt = [0, 0];
@@ -200,7 +196,7 @@
 		y: e.offsetY / canvas.offsetHeight
 	});
 	const isOnSplitPoint = (e: MouseEvent) => {
-		const splitPoint = $quadSplitPoint;
+		const splitPoint = quadSplitPoint;
 		const size = vec2.fromValues(canvas.offsetWidth, canvas.offsetHeight);
 		const splitPointPixels = vec2.fromValues(splitPoint.x, splitPoint.y);
 		vec2.mul(splitPointPixels, splitPointPixels, size);
@@ -209,7 +205,7 @@
 
 	const setCursorStyle = (e: PointerEvent) => {
 		if (interaction == null) {
-			canvas.style.cursor = $quadView && isOnSplitPoint(e) ? 'move' : 'grab';
+			canvas.style.cursor = quadView && isOnSplitPoint(e) ? 'move' : 'grab';
 		} else if (interaction === Interaction.ResizeSplit) {
 			canvas.style.cursor = 'move';
 		} else {
@@ -218,12 +214,12 @@
 	};
 
 	const getInteraction = (e: MouseEvent) => {
-		if ($quadView) {
+		if (quadView) {
 			if (isOnSplitPoint(e)) {
 				return Interaction.ResizeSplit;
 			} else {
 				const relativePoint = getRelativePoint(e);
-				const splitPoint = $quadSplitPoint;
+				const splitPoint = quadSplitPoint;
 				if (relativePoint.y < splitPoint.y) {
 					if (relativePoint.x < splitPoint.x) {
 						return Interaction.Rotate;
@@ -268,7 +264,7 @@
 	};
 
 	const onDblClick = (e: MouseEvent) => {
-		if ($quadView) {
+		if (quadView) {
 			switch (getInteraction(e)) {
 				case Interaction.Rotate:
 					// TODO: batch?
@@ -297,7 +293,7 @@
 					}));
 					break;
 				case Interaction.ResizeSplit:
-					$quadSplitPoint = { x: 0.5, y: 0.5 };
+					quadSplitPoint = { x: 0.5, y: 0.5 };
 					break;
 			}
 		} else {
@@ -325,7 +321,7 @@
 			return;
 		}
 
-		const size = $canvasSize;
+		const size = canvasSize;
 		const deltaX = (canvasPointerAt[0] - pointerWasAt[0]) * (size.width / canvas.clientWidth);
 		const deltaY = (canvasPointerAt[1] - pointerWasAt[1]) * (size.height / canvas.clientHeight);
 		const panRate = $zoom * cameraPanSpeed;
@@ -365,10 +361,11 @@
 			case Interaction.ResizeSplit: {
 				const deltaX = (canvasPointerAt[0] - pointerWasAt[0]) / canvas.clientWidth;
 				const deltaY = (canvasPointerAt[1] - pointerWasAt[1]) / canvas.clientHeight;
-				quadSplitPoint.update(({ x, y }) => ({
+				const { x, y } = quadSplitPoint;
+				quadSplitPoint = {
 					x: x + deltaX,
 					y: y + deltaY
-				}));
+				};
 				break;
 			}
 		}
@@ -435,22 +432,22 @@
 
 <div
 	class="bauble"
-	style:--canvas-width="{$canvasSize.width}px"
-	style:--canvas-height="{$canvasSize.height}px"
+	style:--canvas-width="{canvasSize.width}px"
+	style:--canvas-height="{canvasSize.height}px"
 >
 	<div class="canvas-container" bind:this={canvasContainer}>
 		<RenderToolbar
-			bind:renderType={$renderType}
-			quadView={$quadView}
-			on:toggle-quad-view={() => ($quadView = !$quadView)}
+			bind:renderType
+			{quadView}
+			on:toggle-quad-view={() => (quadView = !quadView)}
 			on:reset-camera={resetCamera}
 		/>
 		<canvas
 			bind:this={canvas}
 			class="render-target"
-			style:image-rendering={$imageRendering}
-			width={$canvasResolution.width}
-			height={$canvasResolution.height}
+			style:image-rendering={imageRendering}
+			width={canvasResolution.width}
+			height={canvasResolution.height}
 			tabindex={focusable ? 0 : undefined}
 			on:wheel={onWheel}
 			on:dblclick={onDblClick}
@@ -471,7 +468,7 @@
 		on:dblclick={onHandleDblClick}
 	/>
 	<div class="code-container" bind:this={codeContainer}>
-		<EditorToolbar state={$evaluationState} />
+		<EditorToolbar state={evaluationState} />
 		<div class="editor-container" bind:this={editorContainer} />
 		<ResizableArea bind:outputContainer />
 	</div>

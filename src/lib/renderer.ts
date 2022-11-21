@@ -1,7 +1,5 @@
-import { derived, get, type Writable } from 'svelte/store';
+import { derived, get, type Readable } from 'svelte/store';
 import { mat3, vec3 } from 'gl-matrix';
-// import * as Signal from './signals';
-// import type {Accessor} from 'solid-js';
 import { clamp, TAU } from './util';
 
 const baseCameraDistance = 512;
@@ -65,13 +63,13 @@ export default class Renderer {
 
 	constructor(
 		canvas: HTMLCanvasElement,
-		private time: Writable<number>, // TODO: give this a unique type
-		private renderType: Writable<number>, // TODO: give this a type
-		private rotation: Writable<{ x: number; y: number }>,
-		private origin: Writable<{ x: number; y: number; z: number }>,
-		private zoom: Writable<number>, // TODO: give this a unique type
-		private quadView: Writable<boolean>,
-		private quadSplitPoint: Writable<{ x: number; y: number }>,
+		private time: () => number, // TODO: give this a unique type
+		private renderType: () => number, // TODO: give this a type
+		private rotation: Readable<{ x: number; y: number }>,
+		private origin: Readable<{ x: number; y: number; z: number }>,
+		private zoom: Readable<number>, // TODO: give this a unique type
+		private quadView: () => boolean,
+		private quadSplitPoint: () => { x: number; y: number },
 		private resolution: () => { width: number; height: number }
 	) {
 		rotateXY(this.orthogonalXY, 0, 0);
@@ -153,8 +151,8 @@ export default class Renderer {
 		const uT = gl.getUniformLocation(program, 't');
 		const uRenderType = gl.getUniformLocation(program, 'render_type');
 
-		gl.uniform1f(uT, get(this.time));
-		gl.uniform1i(uRenderType, get(this.renderType));
+		gl.uniform1f(uT, this.time());
+		gl.uniform1i(uRenderType, this.renderType());
 	}
 
 	private drawSingleView() {
@@ -176,7 +174,7 @@ export default class Renderer {
 		const uCameraMatrix = gl.getUniformLocation(program, 'camera_matrix');
 		const uCameraOrigin = gl.getUniformLocation(program, 'camera_origin');
 
-		const splitPoint = get(this.quadSplitPoint);
+		const splitPoint = this.quadSplitPoint();
 		const resolution = this.resolution();
 		const minPanelSize = 64;
 		const freePaneSize = [
@@ -237,7 +235,7 @@ export default class Renderer {
 		gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
 		gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(positionLocation);
-		if (get(this.quadView)) {
+		if (this.quadView()) {
 			this.drawQuadView();
 		} else {
 			this.drawSingleView();
