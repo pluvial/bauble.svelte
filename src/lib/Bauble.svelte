@@ -8,6 +8,7 @@
 </script>
 
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { derived, writable, type Unsubscriber } from 'svelte/store';
 	import type { EditorView } from '@codemirror/view';
 	import type { Property } from 'csstype';
@@ -17,13 +18,13 @@
 	import type { default as OutputChannel } from './output-channel';
 	import RenderLoop from './render-loop';
 	import Renderer from './renderer';
-	import { Timer, TimerState } from './timer';
-	import { mod } from './util';
+	import { LoopMode, Timer, TimerState } from './timer';
+	import type { Seconds } from './types';
+	import { mod, TAU } from './util';
 	import AnimationToolbar from './AnimationToolbar.svelte';
 	import EditorToolbar from './EditorToolbar.svelte';
 	import RenderToolbar from './RenderToolbar.svelte';
 	import ResizableArea from './ResizableArea.svelte';
-	import { onMount } from 'svelte';
 
 	export let runtime: BaubleModule;
 	export let outputChannel: OutputChannel;
@@ -95,9 +96,19 @@
 	let isAnimation = false;
 	let isVisible = false;
 
-	const timer = new Timer();
+	let loopStart = 0 as Seconds;
+	let loopEnd = TAU as Seconds;
+	let loopMode = LoopMode.NoLoop;
+
+	const timer = new Timer(
+		() => loopStart,
+		() => loopEnd,
+		() => loopMode
+	);
 	const timerState = timer.state;
 	const timerT = timer.t;
+
+	$: timer.updateLoop(loopStart, loopEnd, loopMode);
 
 	const intersectionObserver = new IntersectionObserver((entries) => {
 		for (const entry of entries) {
@@ -471,7 +482,7 @@
 			on:gesturechange={onGestureChange}
 			on:gestureend={onGestureEnd}
 		/>
-		<AnimationToolbar {timer} />
+		<AnimationToolbar {timer} bind:loopStart bind:loopEnd bind:loopMode />
 	</div>
 	<div
 		class="resize-handle canvas-resize-handle"

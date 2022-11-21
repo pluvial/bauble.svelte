@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { LoopMode, TimerState, type Timer } from './timer';
+	import type { Seconds } from './types';
 	import Choices from './Choices.svelte';
 	import Icon from './Icon.svelte';
 	import TimestampInput from './TimestampInput.svelte';
 
 	export let timer: Timer;
-	const { state, t, loopMode, loopStart, loopEnd } = timer;
+	const { state, t } = timer;
+
+	export let loopStart: Seconds;
+	export let loopEnd: Seconds;
+	export let loopMode: LoopMode;
 </script>
 
 <div class="toolbar">
@@ -20,16 +25,16 @@
 	<div class="spacer" />
 	<!-- <div class="scrubber"></div> -->
 	<Choices
-		bind:selected={$loopMode}
+		bind:selected={loopMode}
 		choices={[
 			{ value: LoopMode.NoLoop, icon: 'arrow-bar-right', title: 'No loop' },
 			{ value: LoopMode.Wrap, icon: 'repeat', title: 'Loop' },
 			{ value: LoopMode.Reverse, icon: 'arrow-left-right', title: 'Loop back and forth' }
 		]}
 	/>
-	<TimestampInput bind:time={$loopStart} />
+	<TimestampInput bind:time={loopStart} />
 	<span class="text">to</span>
-	<TimestampInput bind:time={$loopEnd} />
+	<TimestampInput bind:time={loopEnd} />
 </div>
 
 <style>

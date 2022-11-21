@@ -1,4 +1,4 @@
-import { derived, get, writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import type { Seconds } from './types';
 import { TAU } from './util';
 
@@ -55,9 +55,6 @@ function clampTime(
 
 export class Timer {
 	t = writable(0 as Seconds);
-	loopStart = writable(0 as Seconds);
-	loopEnd = writable(TAU as Seconds);
-	loopMode = writable(LoopMode.NoLoop);
 	state = writable(TimerState.Ambivalent);
 	private rate = 1;
 
@@ -69,25 +66,26 @@ export class Timer {
 
 	stop() {
 		// TODO: batch?
-		this.t.set(get(this.loopStart));
+		this.t.set(this.loopStart());
 		this.state.set(TimerState.Paused);
 		this.rate = 1;
 	}
 
-	constructor() {
-		derived([this.loopStart, this.loopEnd, this.loopMode], (stores) => stores).subscribe(
-			([loopStart, loopEnd, loopMode]) => {
-				if (loopMode != LoopMode.Reverse) {
-					this.rate = 1;
-				}
-				const [t, rate] = clampTime(get(this.t), loopStart, loopEnd, loopMode);
-				if (rate !== 0) {
-					this.rate = rate;
-				}
-				this.t.set(t);
-			}
-		);
-		// TODO: clean up effect
+	constructor(
+		public loopStart = () => 0 as Seconds,
+		public loopEnd = () => TAU as Seconds,
+		public loopMode = () => LoopMode.NoLoop
+	) {}
+
+	updateLoop(loopStart: Seconds, loopEnd: Seconds, loopMode: LoopMode) {
+		if (loopMode != LoopMode.Reverse) {
+			this.rate = 1;
+		}
+		const [t, rate] = clampTime(get(this.t), loopStart, loopEnd, loopMode);
+		if (rate !== 0) {
+			this.rate = rate;
+		}
+		this.t.set(t);
 	}
 
 	tick(delta: Seconds, isAnimation: boolean) {
@@ -97,9 +95,9 @@ export class Timer {
 
 		const [t, rate] = clampTime(
 			((get(this.t) as number) + this.rate * (delta as number)) as Seconds,
-			get(this.loopStart),
-			get(this.loopEnd),
-			get(this.loopMode)
+			this.loopStart(),
+			this.loopEnd(),
+			this.loopMode()
 		);
 
 		this.t.set(t);
