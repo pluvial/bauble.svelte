@@ -58,11 +58,7 @@
 		}
 	});
 
-	onDestroy(() => {
-		for (const component of components) {
-			component.$destroy();
-		}
-	});
+	onDestroy(() => components.forEach((component) => component.$destroy()));
 </script>
 
 {@html preamble}

@@ -54,12 +54,11 @@
 		scale: number;
 	}
 
-	const resetCamera = () => {
-		// TODO: batch?
+	function resetCamera() {
 		rotation = defaultCamera.rotation;
 		origin = defaultCamera.origin;
 		zoom = defaultCamera.zoom;
-	};
+	}
 
 	enum Interaction {
 		Rotate,
@@ -212,15 +211,16 @@
 		x: e.offsetX / canvas.offsetWidth,
 		y: e.offsetY / canvas.offsetHeight
 	});
-	const isOnSplitPoint = (e: MouseEvent) => {
+
+	function isOnSplitPoint(e: MouseEvent) {
 		const splitPoint = quadSplitPoint;
 		const size = vec2.fromValues(canvas.offsetWidth, canvas.offsetHeight);
 		const splitPointPixels = vec2.fromValues(splitPoint.x, splitPoint.y);
 		vec2.mul(splitPointPixels, splitPointPixels, size);
 		return vec2.distance(splitPointPixels, [e.offsetX, e.offsetY]) < 10;
-	};
+	}
 
-	const setCursorStyle = (e: PointerEvent) => {
+	function setCursorStyle(e: PointerEvent) {
 		if (interaction == null) {
 			canvas.style.cursor = quadView && isOnSplitPoint(e) ? 'move' : 'grab';
 		} else if (interaction === Interaction.ResizeSplit) {
@@ -228,9 +228,9 @@
 		} else {
 			canvas.style.cursor = 'grabbing';
 		}
-	};
+	}
 
-	const getInteraction = (e: MouseEvent) => {
+	function getInteraction(e: MouseEvent) {
 		if (quadView) {
 			if (isOnSplitPoint(e)) {
 				return Interaction.ResizeSplit;
@@ -254,9 +254,9 @@
 		} else {
 			return Interaction.Rotate;
 		}
-	};
+	}
 
-	const onPointerDown = (e: PointerEvent) => {
+	function onPointerDown(e: PointerEvent) {
 		if (interactionPointer != null) {
 			return;
 		}
@@ -269,46 +269,42 @@
 		interactionPointer = e.pointerId;
 		interaction = getInteraction(e);
 		setCursorStyle(e);
-	};
+	}
 
-	const onPointerUp = (e: PointerEvent) => {
+	function onPointerUp(e: PointerEvent) {
 		e.preventDefault();
 		if (e.pointerId === interactionPointer) {
 			interactionPointer = null;
 			interaction = null;
 		}
 		setCursorStyle(e);
-	};
+	}
 
-	const onDblClick = (e: MouseEvent) => {
+	function onDblClick(e: MouseEvent) {
 		if (quadView) {
 			switch (getInteraction(e)) {
 				case Interaction.Rotate:
-					// TODO: batch?
 					rotation = defaultCamera.rotation;
 					zoom = defaultCamera.zoom;
 					break;
 				case Interaction.PanXY:
-					const { z } = origin;
 					origin = {
 						x: defaultCamera.origin.x,
 						y: defaultCamera.origin.y,
-						z
+						z: origin.z
 					};
 					break;
 				case Interaction.PanZY:
-					const { x } = origin;
 					origin = {
-						x,
+						x: origin.x,
 						y: defaultCamera.origin.y,
 						z: defaultCamera.origin.z
 					};
 					break;
 				case Interaction.PanXZ:
-					const { y } = origin;
 					origin = {
 						x: defaultCamera.origin.x,
-						y,
+						y: origin.y,
 						z: defaultCamera.origin.z
 					};
 					break;
@@ -319,9 +315,9 @@
 		} else {
 			resetCamera();
 		}
-	};
+	}
 
-	const onPointerMove = (e: PointerEvent) => {
+	function onPointerMove(e: PointerEvent) {
 		setCursorStyle(e);
 
 		if (e.pointerId !== interactionPointer) {
@@ -348,54 +344,49 @@
 
 		switch (interaction!) {
 			case Interaction.Rotate: {
-				const { x, y } = rotation;
 				rotation = {
-					x: mod(x - deltaX * cameraRotateSpeed, 1.0),
-					y: mod(y - deltaY * cameraRotateSpeed, 1.0)
+					x: mod(rotation.x - deltaX * cameraRotateSpeed, 1.0),
+					y: mod(rotation.y - deltaY * cameraRotateSpeed, 1.0)
 				};
 				break;
 			}
 			case Interaction.PanXY: {
-				const { x, y, z } = origin;
 				origin = {
-					x: x - deltaX * panRate,
-					y: y + deltaY * panRate,
-					z: z
+					x: origin.x - deltaX * panRate,
+					y: origin.y + deltaY * panRate,
+					z: origin.z
 				};
 				break;
 			}
 			case Interaction.PanZY: {
-				const { x, y, z } = origin;
 				origin = {
-					x: x,
-					y: y + deltaY * panRate,
-					z: z - deltaX * panRate
+					x: origin.x,
+					y: origin.y + deltaY * panRate,
+					z: origin.z - deltaX * panRate
 				};
 				break;
 			}
 			case Interaction.PanXZ: {
-				const { x, y, z } = origin;
 				origin = {
-					x: x - deltaX * panRate,
-					y: y,
-					z: z - deltaY * panRate
+					x: origin.x - deltaX * panRate,
+					y: origin.y,
+					z: origin.z - deltaY * panRate
 				};
 				break;
 			}
 			case Interaction.ResizeSplit: {
 				const deltaX = (canvasPointerAt[0] - pointerWasAt[0]) / canvas.clientWidth;
 				const deltaY = (canvasPointerAt[1] - pointerWasAt[1]) / canvas.clientHeight;
-				const { x, y } = quadSplitPoint;
 				quadSplitPoint = {
-					x: x + deltaX,
-					y: y + deltaY
+					x: quadSplitPoint.x + deltaX,
+					y: quadSplitPoint.y + deltaY
 				};
 				break;
 			}
 		}
-	};
+	}
 
-	const onWheel = (e: WheelEvent) => {
+	function onWheel(e: WheelEvent) {
 		if (focusable && document.activeElement !== canvas) {
 			return;
 		}
@@ -405,33 +396,39 @@
 		// in very choppy scrolling. I don't really know a good
 		// way to fix this without explicit platform detection.
 		zoom = Math.max(0, zoom + cameraZoomSpeed * e.deltaY);
-	};
+	}
 
 	let initialZoom = 1;
-	const onGestureStart = () => {
+
+	function onGestureStart() {
 		initialZoom = zoom;
 		isGesturing = true;
-	};
-	const onGestureChange = (e: GestureEvent) => {
+	}
+
+	function onGestureChange(e: GestureEvent) {
 		zoom = Math.max(0, initialZoom / e.scale);
-	};
-	const onGestureEnd = () => {
+	}
+
+	function onGestureEnd() {
 		isGesturing = false;
 		gestureEndedAt = performance.now();
-	};
+	}
 
 	let codeContainer: HTMLDivElement;
 	let handlePointerAt = [0, 0];
-	const onHandlePointerDown = (e: PointerEvent & { currentTarget: HTMLDivElement }) => {
+
+	function onHandlePointerDown(e: PointerEvent & { currentTarget: HTMLDivElement }) {
 		e.currentTarget.setPointerCapture(e.pointerId);
 		handlePointerAt = [e.screenX, e.screenY];
-	};
-	const onHandleDblClick = () => {
+	}
+
+	function onHandleDblClick() {
 		// TODO: width or height!
 		codeContainer.style.flexBasis = `var(--canvas-width)`;
 		canvasContainer.style.flexBasis = 'var(--canvas-width)';
-	};
-	const onHandlePointerMove = (e: PointerEvent & { currentTarget: HTMLDivElement }) => {
+	}
+
+	function onHandlePointerMove(e: PointerEvent & { currentTarget: HTMLDivElement }) {
 		if (!e.currentTarget.hasPointerCapture(e.pointerId)) {
 			return;
 		}
@@ -451,7 +448,7 @@
 			: handlePointerAt[0] - handlePointerWasAt[0];
 		codeContainer.style.flexBasis = `0`;
 		canvasContainer.style.flexBasis = `${oldSize - delta}px`;
-	};
+	}
 </script>
 
 <div
