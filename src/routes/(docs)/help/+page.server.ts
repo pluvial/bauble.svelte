@@ -7,7 +7,10 @@ const heading = renderer.heading.bind(renderer);
 const headings: { anchor: string; level: number; text: string }[] = [];
 
 renderer.heading = (text, level, raw, slugger) => {
-	const anchor = raw.toLowerCase().replaceAll(/[^\w]+/g, '-');
+	const anchor = raw
+		.toLowerCase()
+		.replaceAll(/[/?]/g, '')
+		.replaceAll(/[^\w]+/g, '-');
 	headings.push({
 		anchor,
 		level,
