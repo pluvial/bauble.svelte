@@ -8,7 +8,7 @@
 </script>
 
 <script lang="ts">
-	import { derived, writable } from 'svelte/store';
+	import { derived, writable, type Unsubscriber } from 'svelte/store';
 	import type { EditorView } from '@codemirror/view';
 	import type { Property } from 'csstype';
 	import { vec2 } from 'gl-matrix';
@@ -55,9 +55,9 @@
 
 	const resetCamera = () => {
 		// TODO: batch?
-		rotation.set(defaultCamera.rotation);
-		origin.set(defaultCamera.origin);
-		zoom.set(defaultCamera.zoom);
+		rotation = defaultCamera.rotation;
+		origin = defaultCamera.origin;
+		zoom = defaultCamera.zoom;
 	};
 
 	enum Interaction {
@@ -87,9 +87,9 @@
 	let renderType = 0;
 	let quadView = false;
 	let quadSplitPoint = { x: 0.5, y: 0.5 };
-	const zoom = writable(defaultCamera.zoom);
-	const rotation = writable(defaultCamera.rotation);
-	const origin = writable(defaultCamera.origin);
+	let zoom = defaultCamera.zoom;
+	let rotation = defaultCamera.rotation;
+	let origin = defaultCamera.origin;
 	let scriptDirty = true;
 	let evaluationState = EvaluationState.Unknown;
 	let isAnimation = false;
@@ -106,19 +106,22 @@
 	});
 
 	const vars = writable([
-		isVisible,
-		scriptDirty,
+		canvasResolution,
 		renderType,
 		quadView,
 		quadSplitPoint,
-		canvasResolution
+		zoom,
+		rotation,
+		origin,
+		scriptDirty,
+		isVisible
 	]);
-	$: $vars = [isVisible, scriptDirty, renderType, quadView, quadSplitPoint, canvasResolution];
+	$: $vars = [canvasResolution, renderType, quadView, quadSplitPoint, scriptDirty, isVisible];
 
-	const renderVars = derived(
-		[rotation, origin, zoom, timer.state, timer.t, vars],
-		(stores) => stores
-	);
+	const rendererVars = writable([zoom, rotation, origin]);
+	$: $rendererVars = [zoom, rotation, origin];
+
+	const renderVars = derived([timer.state, timer.t, vars, rendererVars], (stores) => stores);
 
 	onMount(() => {
 		intersectionObserver.observe(canvas);
@@ -133,13 +136,15 @@
 			canvas,
 			() => $timerT,
 			() => renderType,
-			rotation,
-			origin,
-			zoom,
+			() => rotation,
+			() => origin,
+			() => zoom,
 			() => quadView,
 			() => quadSplitPoint,
 			() => canvasResolution
 		);
+		const unsubscribers: Unsubscriber[] = [];
+		unsubscribers.push(rendererVars.subscribe(() => renderer.updateCamera()));
 
 		const renderLoop = new RenderLoop((elapsed) => {
 			if (!isVisible) {
@@ -184,7 +189,8 @@
 			}
 			renderer.draw();
 		});
-		return renderVars.subscribe(() => renderLoop.schedule());
+		unsubscribers.push(renderVars.subscribe(() => renderLoop.schedule()));
+		return () => unsubscribers.forEach((unsubscribe) => unsubscribe());
 	});
 
 	let canvasPointerAt = [0, 0];
@@ -268,29 +274,32 @@
 			switch (getInteraction(e)) {
 				case Interaction.Rotate:
 					// TODO: batch?
-					$rotation = defaultCamera.rotation;
-					$zoom = defaultCamera.zoom;
+					rotation = defaultCamera.rotation;
+					zoom = defaultCamera.zoom;
 					break;
 				case Interaction.PanXY:
-					origin.update(({ z }) => ({
+					const { z } = origin;
+					origin = {
 						x: defaultCamera.origin.x,
 						y: defaultCamera.origin.y,
 						z
-					}));
+					};
 					break;
 				case Interaction.PanZY:
-					origin.update(({ x }) => ({
+					const { x } = origin;
+					origin = {
 						x,
 						y: defaultCamera.origin.y,
 						z: defaultCamera.origin.z
-					}));
+					};
 					break;
 				case Interaction.PanXZ:
-					origin.update(({ y }) => ({
+					const { y } = origin;
+					origin = {
 						x: defaultCamera.origin.x,
 						y,
 						z: defaultCamera.origin.z
-					}));
+					};
 					break;
 				case Interaction.ResizeSplit:
 					quadSplitPoint = { x: 0.5, y: 0.5 };
@@ -324,38 +333,42 @@
 		const size = canvasSize;
 		const deltaX = (canvasPointerAt[0] - pointerWasAt[0]) * (size.width / canvas.clientWidth);
 		const deltaY = (canvasPointerAt[1] - pointerWasAt[1]) * (size.height / canvas.clientHeight);
-		const panRate = $zoom * cameraPanSpeed;
+		const panRate = zoom * cameraPanSpeed;
 
 		switch (interaction!) {
 			case Interaction.Rotate: {
-				rotation.update(({ x, y }) => ({
+				const { x, y } = rotation;
+				rotation = {
 					x: mod(x - deltaX * cameraRotateSpeed, 1.0),
 					y: mod(y - deltaY * cameraRotateSpeed, 1.0)
-				}));
+				};
 				break;
 			}
 			case Interaction.PanXY: {
-				origin.update(({ x, y, z }) => ({
+				const { x, y, z } = origin;
+				origin = {
 					x: x - deltaX * panRate,
 					y: y + deltaY * panRate,
 					z: z
-				}));
+				};
 				break;
 			}
 			case Interaction.PanZY: {
-				origin.update(({ x, y, z }) => ({
+				const { x, y, z } = origin;
+				origin = {
 					x: x,
 					y: y + deltaY * panRate,
 					z: z - deltaX * panRate
-				}));
+				};
 				break;
 			}
 			case Interaction.PanXZ: {
-				origin.update(({ x, y, z }) => ({
+				const { x, y, z } = origin;
+				origin = {
 					x: x - deltaX * panRate,
 					y: y,
 					z: z - deltaY * panRate
-				}));
+				};
 				break;
 			}
 			case Interaction.ResizeSplit: {
@@ -380,16 +393,16 @@
 		// will report very large values of deltaY, resulting
 		// in very choppy scrolling. I don't really know a good
 		// way to fix this without explicit platform detection.
-		zoom.update((x) => Math.max(0, x + cameraZoomSpeed * e.deltaY));
+		zoom = Math.max(0, zoom + cameraZoomSpeed * e.deltaY);
 	};
 
 	let initialZoom = 1;
 	const onGestureStart = () => {
-		initialZoom = $zoom;
+		initialZoom = zoom;
 		isGesturing = true;
 	};
 	const onGestureChange = (e: GestureEvent) => {
-		$zoom = Math.max(0, initialZoom / e.scale);
+		zoom = Math.max(0, initialZoom / e.scale);
 	};
 	const onGestureEnd = () => {
 		isGesturing = false;

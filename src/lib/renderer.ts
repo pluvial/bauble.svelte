@@ -1,4 +1,3 @@
-import { derived, get, type Readable } from 'svelte/store';
 import { mat3, vec3 } from 'gl-matrix';
 import { clamp, TAU } from './util';
 
@@ -70,9 +69,9 @@ export default class Renderer {
 		canvas: HTMLCanvasElement,
 		private time: () => number, // TODO: give this a unique type
 		private renderType: () => number, // TODO: give this a type
-		private rotation: Readable<{ x: number; y: number }>,
-		private origin: Readable<{ x: number; y: number; z: number }>,
-		private zoom: Readable<number>, // TODO: give this a unique type
+		private rotation: () => { x: number; y: number },
+		private origin: () => { x: number; y: number; z: number },
+		private zoom: () => number, // TODO: give this a unique type
 		private quadView: () => boolean,
 		private quadSplitPoint: () => { x: number; y: number },
 		private resolution: () => { width: number; height: number }
@@ -119,11 +118,6 @@ export default class Renderer {
 		this.program = program;
 		this.vertexBuffer = vertexBuffer;
 		this.vertexData = vertexData;
-
-		derived([rotation, origin, zoom], (stores) => stores).subscribe(() => {
-			this.cameraDirty = true;
-		});
-		// TODO: clean up effect
 	}
 
 	private get positionLocation(): number {
@@ -135,11 +129,11 @@ export default class Renderer {
 	}
 
 	private calculateCameraMatrix() {
-		const { x, y } = get(this.rotation);
+		const { x, y } = this.rotation();
 		rotateXY(this.cameraMatrix, x * TAU, y * TAU);
-		vec3.set(this.cameraOrigin, 0, 0, baseCameraDistance * get(this.zoom));
+		vec3.set(this.cameraOrigin, 0, 0, baseCameraDistance * this.zoom());
 		vec3.transformMat3(this.cameraOrigin, this.cameraOrigin, this.cameraMatrix);
-		const target = get(this.origin);
+		const target = this.origin();
 		vec3.add(this.cameraOrigin, this.cameraOrigin, [target.x, target.y, target.z]);
 		this.cameraDirty = false;
 	}
@@ -200,8 +194,8 @@ export default class Renderer {
 		const rightPaneWidth = resolution.width - freePaneSize[0];
 		const bottomPaneHeight = resolution.height - freePaneSize[1];
 
-		const zoom = get(this.zoom);
-		const target = get(this.origin);
+		const zoom = this.zoom();
+		const target = this.origin();
 		// bottom left: XY
 		gl.uniform3fv(uCameraOrigin, [target.x, target.y, target.z + baseCameraDistance * zoom]);
 		gl.uniformMatrix3fv(uCameraMatrix, false, this.orthogonalXY);
@@ -228,6 +222,10 @@ export default class Renderer {
 		gl.uniformMatrix3fv(uCameraMatrix, false, this.orthogonalXZ);
 		this.setViewport(leftPaneWidth, bottomPaneHeight, rightPaneWidth, topPaneHeight);
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
+	}
+
+	updateCamera() {
+		this.cameraDirty = true;
 	}
 
 	draw() {
