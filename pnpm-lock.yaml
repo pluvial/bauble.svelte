@@ -20,8 +20,8 @@ dependencies:
     specifier: ^1.1.4
     version: 1.1.4
   bauble-runtime:
-    specifier: 0.0.3
-    version: 0.0.3
+    specifier: ^0.0.4
+    version: 0.0.4
   big.js:
     specifier: ^6.2.1
     version: 6.2.1
@@ -1045,8 +1045,8 @@ packages:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
     dev: true
 
-  /bauble-runtime@0.0.3:
-    resolution: {integrity: sha512-182fx9NSwdJefzgcQutKine+pdGpaZ7Fag0+ntjZmTe3lakZjMnHixpbxRelgi34uqKJbo9w519r68wL6fjTAA==}
+  /bauble-runtime@0.0.4:
+    resolution: {integrity: sha512-qfB/PTmEgwJ4ugeGvFeRL8Oi79erqvunujHdB2in1A/l5EdzEN/dWI683qSIqTR1fy96ygzjaZdpZorUX2Gq2w==}
     dev: false
 
   /big.js@6.2.1:

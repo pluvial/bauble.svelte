@@ -20,7 +20,7 @@
 		"@codemirror/view": "^6.9.6",
 		"@lezer/common": "^1.0.2",
 		"@lezer/highlight": "^1.1.4",
-		"bauble-runtime": "0.0.3",
+		"bauble-runtime": "^0.0.4",
 		"big.js": "^6.2.1",
 		"codemirror": "^6.0.1",
 		"codemirror-lang-janet": "^0.7.2",
