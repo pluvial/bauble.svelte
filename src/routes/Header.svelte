@@ -3,7 +3,7 @@
 		>Help</a
 	><a class="text-link" href="/about">About</a><a
 		class="image-link"
-		href="https://github.com/ianthehenry/bauble"
+		href="https://github.com/ianthehenry/bauble.studio"
 		rel="noreferrer"
 		target="_blank"><svg><use xlink:href="/icons.svg#github" /></svg></a
 	>

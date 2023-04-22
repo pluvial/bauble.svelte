@@ -112,7 +112,8 @@
 			backgroundColor: 'initial'
 		},
 		'&.cm-focused .cm-activeLine': {
-			backgroundColor: 'var(--line)'
+			// TODO: this breaks selection highlighting, which is crazy
+			// backgroundColor: 'var(--line)',
 		},
 		'.cm-activeLineGutter': {
 			backgroundColor: 'initial'
@@ -153,7 +154,7 @@
 			backgroundColor: 'var(--background)',
 			color: 'var(--comment)'
 		},
-		'&.cm-focused .cm-selectionBackground, ::selection': {
+		'&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': {
 			backgroundColor: 'var(--selection)'
 		},
 		'.cm-gutters': {

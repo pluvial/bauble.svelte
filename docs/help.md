@@ -141,7 +141,7 @@ Takes named `:x`, `:y`, and `:z` arguments; the final rotation is the combinatio
 
 You can also pass `:pivot`, with a `vec3` that will form the point around which rotation happens.
 
-You can also optionally supply scale arguments, which will multiply the rotations _following_ that scale argument by a fixed amount. Valid scales are `:pi`, `:tau`, or `:deg`. You can change scale mid-rotation, for example by saying `(rotate :deg :x 45 :tau :y 0.125)`. This is equivalent to `(rotate :x tau/8 :y tau/8)`.
+You can also optionally supply scale arguments, which will multiply the rotations *following* that scale argument by a fixed amount. Valid scales are `:pi`, `:tau`, or `:deg`. You can change scale mid-rotation, for example by saying `(rotate :deg :x 45 :tau :y 0.125)`. This is equivalent to `(rotate :x tau/8 :y tau/8)`.
 
 ```
 (union
@@ -296,9 +296,9 @@ Apply a function to a shape's distance field. Can be used to do weird things. Ma
 
 # Hybrid spatial/surface operations
 
-The boolean operations `union`, `intersect`, and `subtract` can all take an optional `:r` value, but note that this will make color calculations slower: _all_ surfaces will be evaluated, even those that do not contribute at all to the final result. When used without `:r`, or with an `:r` value of `0` (as evaluated on the CPU -- any symbolic expression will cause Bauble to take the slow branch), only the one relevant surface will be evaluated.
+The boolean operations `union`, `intersect`, and `subtract` can all take an optional `:r` value, but note that this will make color calculations slower: *all* surfaces will be evaluated, even those that do not contribute at all to the final result. When used without `:r`, or with an `:r` value of `0` (as evaluated on the CPU -- any symbolic expression will cause Bauble to take the slow branch), only the one relevant surface will be evaluated.
 
-Because of this, you should prefer to apply surfaces _after_ smooth boolean operations, unless of course you are relying on the surface blending. Even if it's the same surface, Bauble will still evaluate it multiple times! (This is a fixable deficiency in Bauble but it is the way that it is right now.)
+Because of this, you should prefer to apply surfaces *after* smooth boolean operations, unless of course you are relying on the surface blending. Even if it's the same surface, Bauble will still evaluate it multiple times! (This is a fixable deficiency in Bauble but it is the way that it is right now.)
 
 ## `union`
 
@@ -353,7 +353,7 @@ If you provide a function argument instead of a shape, your function will be cal
 
 Indexes are integers, so the index of the element at the origin is `[0 0 0]`, the index to the right of that is `[1 0 0]`, etc.
 
-You can also provide a shape _and_ a function, in which case the shape will be passed as the first argument to your function. By appropriating a little bit of Janet convention, we call this argument `$`, for `$hape`. This is useful for fitting `tile` into a pipeline:
+You can also provide a shape *and* a function, in which case the shape will be passed as the first argument to your function. By appropriating a little bit of Janet convention, we call this argument `$`, for `$hape`. This is useful for fitting `tile` into a pipeline:
 
 ```
 (sphere 50
@@ -364,9 +364,9 @@ You can also provide a shape _and_ a function, in which case the shape will be p
 
 ### Asymmetry
 
-The way `tile` works is that, for each step of the raymarch, it computes the current "slice" of space. Then it evaluates _only_ that one slice, and returns the nearest distance.
+The way `tile` works is that, for each step of the raymarch, it computes the current "slice" of space. Then it evaluates *only* that one slice, and returns the nearest distance.
 
-This means that, if the actual nearest shape is in a _different_ tile than the current one, this will produce an invalid distance field.
+This means that, if the actual nearest shape is in a *different* tile than the current one, this will produce an invalid distance field.
 
 ```
 (tile [150 0 150] (fn [i]
@@ -401,27 +401,18 @@ Like `tile` you can supply a mapping function (with a shape) or a producing func
 # Operations on color
 
 ## `shade`
-
 ## `fresnel`
-
 ## `cel?`
-
 ## `resurface`
-
 ## `map-color`
-
 ## `color`
 
 # Meta-operations
 
 ## `bound`
-
 ## `bounded`
-
 ## `bounded-offset`
-
 ## `slow`
-
 ## `pivot`
 
 # General helpers
@@ -477,18 +468,18 @@ Like `tile` you can supply a mapping function (with a shape) or a producing func
 
 # Color constants
 
-- `(def red (hsv (/ 0 6) 0.98 1))`
-- `(def orange (hsv (/ 0.25 6) 0.98 1))`
-- `(def yellow (hsv (/ 1 6) 0.98 1))`
-- `(def green (hsv (/ 2 6) 0.98 1))`
-- `(def cyan (hsv (/ 3 6) 0.98 1))`
-- `(def sky (hsv (/ 3.5 6) 0.98 1))`
-- `(def blue (hsv (/ 4 6) 0.98 1))`
-- `(def purple (hsv (/ 4.5 6) 0.98 1))`
-- `(def magenta (hsv (/ 5 6) 0.98 1))`
-- `(def hot-pink (hsv (/ 5.5 6) 0.98 1))`
-- `(def white [1 1 1])`
+- `(def red      (hsv (/ 0 6)    0.98 1))`
+- `(def orange   (hsv (/ 0.25 6) 0.98 1))`
+- `(def yellow   (hsv (/ 1 6)    0.98 1))`
+- `(def green    (hsv (/ 2 6)    0.98 1))`
+- `(def cyan     (hsv (/ 3 6)    0.98 1))`
+- `(def sky      (hsv (/ 3.5 6)  0.98 1))`
+- `(def blue     (hsv (/ 4 6)    0.98 1))`
+- `(def purple   (hsv (/ 4.5 6)  0.98 1))`
+- `(def magenta  (hsv (/ 5 6)    0.98 1))`
+- `(def hot-pink (hsv (/ 5.5 6)  0.98 1))`
+- `(def white      [1    1    1])`
 - `(def light-gray [0.75 0.75 0.75])`
-- `(def gray [0.5 0.5 0.5])`
-- `(def dark-gray [0.25 0.25 0.25])`
-- `(def black [0.03 0.03 0.03])`
+- `(def gray       [0.5  0.5  0.5])`
+- `(def dark-gray  [0.25 0.25 0.25])`
+- `(def black      [0.03 0.03 0.03])`
