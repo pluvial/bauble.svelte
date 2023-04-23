@@ -3,7 +3,8 @@
 	import type { BaubleModule } from 'bauble-runtime';
 	import { Bauble, createOutputChannel } from '$lib';
 	import type { PageData } from './$types';
-	import './styles.css';
+	// NOTE: dynamic import to avoid global styles order issue in build
+	// import './styles.css';
 
 	export let data: PageData;
 	$: ({ preamble, toc, content } = data);
@@ -25,6 +26,8 @@
 
 	onMount(async () => {
 		try {
+			// NOTE: dynamic import to avoid global styles order issue in build
+			await import('./styles.css');
 			const { default: InitializeWasm } = await import('bauble-runtime');
 			runtime = await InitializeWasm(baubleOpts);
 

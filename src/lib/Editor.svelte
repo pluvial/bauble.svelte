@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { basicSetup } from 'codemirror';
-	import { EditorView, keymap, ViewUpdate } from '@codemirror/view';
+	import { EditorView, keymap, type ViewUpdate } from '@codemirror/view';
 	import { indentWithTab } from '@codemirror/commands';
 	import { syntaxTree, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
 	import type { SyntaxNode } from '@lezer/common';
 	import { tags } from '@lezer/highlight';
 	import { janet } from 'codemirror-lang-janet';
-	import { EditorState, EditorSelection, Transaction } from '@codemirror/state';
+	import { type EditorState, EditorSelection, type Transaction } from '@codemirror/state';
 	import Big from 'big.js';
 	import * as Storage from './storage';
 	import { createEventDispatcher, onMount } from 'svelte';
