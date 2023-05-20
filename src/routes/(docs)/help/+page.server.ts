@@ -1,30 +1,32 @@
 import { marked, Renderer } from 'marked';
+import { gfmHeadingId } from 'marked-gfm-heading-id';
 import type { PageServerLoad } from './$types';
-
-const renderer = new Renderer();
-const heading = renderer.heading.bind(renderer);
 
 const headings: { anchor: string; level: number; text: string }[] = [];
 
-renderer.heading = (text, level, raw, slugger) => {
-	const anchor = raw
-		.toLowerCase()
-		.replaceAll(/[/?]/g, '')
-		.replaceAll(/[^\w]+/g, '-');
-	headings.push({
-		anchor,
-		level,
-		text
-	});
-	return heading(text, level, raw, slugger);
+const renderer = {
+	heading(text: string, level: number, raw: string): string | false {
+		const anchor = raw
+			.toLowerCase()
+			.replaceAll(/[/?]/g, '')
+			.replaceAll(/[^\w]+/g, '-');
+		headings.push({
+			anchor,
+			level,
+			text
+		});
+		return false;
+	}
 };
+
+marked.use({ mangle: false }, gfmHeadingId(), { renderer });
 
 export const load: PageServerLoad = async () => {
 	const [{ default: file }, { default: preamble }] = await Promise.all([
 		import('/docs/help.md?raw'),
 		import('/docs/preamble.md?raw')
 	]);
-	const content = marked(file, { headerIds: true, renderer })
+	const content = marked(file)
 		.replaceAll('<pre><code>', '<div class="bauble-placeholder"><div class="script">')
 		.replaceAll('</code></pre>', '</div></div>');
 	const toc =
